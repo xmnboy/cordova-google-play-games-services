@@ -1,64 +1,109 @@
-#Cordova Google Play Games Services + iOS Game Center
+Cordova Google Play Games Services + iOS Game Center
+====================================================
 
-This plugin is for Cordova Android apps to enable limitted Google Play Games Services API and iOS Game Center
+This plugin enables Cordova app access to a subset of the Google Play Games
+Services API and the iOS Game Center API.
 
-##iOS support
+iOS support is provided via a dependency on the [Wizcorp Game Center
+plugin](<https://github.com/Wizcorp/phonegap-plugin-gameCenter>). The iOS API
+calls have been wrapped in a JavaScript shim to match those shown below. See
+[this plugin source file](<www/iOSGooglePlayGamesPlugin.js>) for a list of the
+available functions in the iOS implementation.
 
-iOS support has been added through a dependency of <a href="https://github.com/Wizcorp/phonegap-plugin-gameCenter">https://github.com/Wizcorp/phonegap-plugin-gameCenter</a> .  We have wrapped the API calls to match below.  See the plugin for configuration details.
+Google Play Game Services Setup
+-------------------------------
 
-##Usage
+This plugin includes a variable named `GPSAPPID` for use with Android apps,
+which you must define when you install the plugin into your project.
 
-Follow the instructions here on setting up your app in Google Play Dashboard.  Make sure you have your application ID for installation.
+Follow the instructions in [Setting Up Google Play Games
+Services](<https://developers.google.com/games/services/console/enabling>) to
+link your app in the Google Play Developer Console with your Google Play Game
+Services. During this process, you will be provided with an *Application ID*
+that you will need when installing this plugin.
 
-Please see <a href="https://developers.google.com/games/services/console/enabling" target="_blank">the instructions</a> online for getting the app id.
+>   **NOTE:** do not confuse the Google Play Game Services *Application ID* with
+>   your Cordova *Application ID* -- they are not the same IDs.
 
-##Short version
+The `GPSAPPID` is a 12-13 digit numeric prefix to the *OAuth2 Client ID*
+associated with your linked game app. Google refers to this prefix number as the
+*Application ID*. After you have successfully linked your app to your game
+service, you can locate this 12-13 digit number by viewing the details of your
+app, inside the *Linked apps* section of the *Game services* panel in the Google
+Play Developer Console.
 
-Go into the Google Play Developer Console -> Game Services -> Add New Game
+### Short version
 
-Fill out the information and type and hit "Save".  On the next page, you will see the title and a number next to it.  That number is your App Id
+Go into the *Google Play Developer Console* \> *Game Services*-\> *Add New Game*
+and fill out the information and hit *Save*. On the next page you will see the
+title and a number next to it. That number is your `GPSAPPID` (*Application
+ID*).
 
-##Installing plugin
+Installing the plugin using Cordova CLI
+---------------------------------------
 
-```
-cordova plugin add com.intel.googleplaygameservices --variable GPSAPPID=“_APPID_”
-```
+To install this plugin, and its dependencies, into your Cordova CLI project, use
+the following command:
 
-This will install the plugin, and dependencies in your app.  The GPSAPPID is the Application ID you get from Google Play Dashboard when authorizing your application.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cordova plugin add https://github.com/01org/cordova-google-play-games-services.git --variable GPSAPPID="_APPID_"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Where you have substituted \_APPID\_ with your app’s *Game Services Application
+ID* (see previous section above).
 
-To install in the Intel® XDK add the following to your intelxdk.config.additions.xml
+Installing the plugin using the Intel XDK
+-----------------------------------------
 
-```
-<intelxdk:plugin intelxdk:name="googleplaygameservices" intelxdk:value="http://...">
-    <intelxdk:param intelxdk:name="GPSAPPID" intelxdk:value="_APPID_" />
-</intelxdk:plugin>
+To install this plugin using the Intel® XDK, you have three options:
 
-```
+1.  Find the plugin in the *Featured Plugins* list using the *Cordova Plugin
+    Explorer.*
 
-###API
-The JavaScript API is below.  Everything is called on the GooglePlayGamesPlugin object
+2.  Use the *Third-Party Plugins* option of the *Cordova Plugin Explorer* and
+    fill out the dialog as a *Cordova plugin registry* plugin using
+    `com.intel.googleplaygamesplugin` as the plugin ID.
 
-```
-connect()                      call on device ready . This connects the native api
+3.  Use the *Third-Party Plugins* option and fill out the dialog as a *Git repo*
+    plugin, similar to the following image:
+
+![](<docs/xdk-git-repo-import-dialog.png>)
+
+Where the *123456789012* value is substituted with your app’s *Game Services
+Application ID*.
+
+>   **NOTE:** If you leave the *Git Ref* field blank you will retrieve the
+>   latest commits on the master branch of that git repo, which may not be what
+>   you want. Instead, you should specify a *Tag* or a *Commit* hash from the
+>   repo. The repo contains [a list of the available
+>   tags](<https://github.com/01org/cordova-google-play-games-services/tags>).
+
+API
+---
+
+The plugin's JavaScript API is shown below. All plugin methods are accessed via
+a `GooglePlayGamesPlugin` object.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+connect()                      call after deviceready. This connects the native api
 
 authenticate(success,failure)   Authenticate the user against a google play
                                 account.  Will call success or failure functions.
                                 If fail, a message will be passed from the google play
 
-logout(success,failure) 		 Sign the user out of Google Play Games Services
-								 for your app
+logout(success,failure)          Sign the user out of Google Play Games Services
+                                 for your app
 
 addAchievement(achievement_id,success,failure)  unlock the achievement for the user
 
 showAchievements(success,failure)  Show the achievements for the user.
-									If there is an error (not logged in),
-									the message will be passed in.  This is a
-									new activity that gets launched
+                                    If there is an error (not logged in),
+                                    the message will be passed in.  This is a
+                                    new activity that gets launched
 
 updateLeaderboardScore(leaderboard_id,score,success,failure)
-									Update the score for the selected
-									leaderboard for the user
+                                    Update the score for the selected
+                                    leaderboard for the user
 
 showLeaderboardScore(leaderboard_id,success,failure)
                                     Show the leaderboard.
@@ -83,26 +128,36 @@ deleteSavedGame(id)
 getAllSavedGames()
                             Returns an object with all the saved games.
                             The key is the id used to save.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+NOTES
+-----
 
-```
+Achievements and leaderboards are created in the Google Play Dashboard. They
+will give you a string parameter for you to call the functions with.
 
+### Testing
 
-###NOTES
+To test your app:
 
-Achievements and leaderboards are created in the Google Play Dashboard.  They will give you a string parameter for you to call the functions with.
+-   build your application and submit it in the Google Play Store as an Alpha
+    APK
 
+-   goto `Google Play Developer Console -> Game Services` and link your
+    application to the game service you created
 
-###Testing
+-   after your app and game service are linked, enable testing for the app and
+    game service
 
-To test your app, you must build your application and submit it as an Alpha APK.  Next go to go to Google Play Developer Console -> Game Services  and link your application to the game service you created.  After they are linked, you can enable testing for both.
+https://developers.google.com/games/services/console/testpub\#enabling\_accounts\_for\_testing
 
-https://developers.google.com/games/services/console/testpub#enabling_accounts_for_testing
+When testing, make sure you add the test user under "Testing" in the game
+service you created.
 
-Make sure in the game service you created, you have also added the user under "Testing"
+### Adding API's
 
-
-###Adding API's
-
-This is a small subset of the Google Play Games Services API, but can easily be extended.  Feel free to fork and contribute extended the API's.  Any API's that reuqire a new activity, like logging in, should be implemented in GooglePlayGamesServices.java .  All other API's can be added to GooglePlayGamesPlugin.java
-
+The APIs provided in this plugin are a small subset of the Google Play Games
+Services API, but can easily be extended. Feel free to fork and contribute
+extended the APIs. Any APIs that require a new activity, like logging in, should
+be implemented in `GooglePlayGamesServices.java`. All other API's can be added
+to `GooglePlayGamesPlugin.java`.
